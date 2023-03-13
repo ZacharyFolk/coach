@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 8000;
-const User = require('./model/user');
+const userRouter = require('./routes/user');
 const mongoose = require('mongoose');
 mongoose
   .connect('mongodb://192.168.86.26:27017/coach', {
@@ -22,22 +22,7 @@ app.use((err, req, res, next) => {
   }
 });
 
-app.post(
-  '/api/user/create',
-
-  (req, res) => {
-    const { name, email, password } = req.body;
-
-    const newUser = new User({
-      name,
-      email,
-      password,
-    });
-
-    res.send(newUser);
-  }
-);
-
+app.use('/api/user', userRouter);
 // app.get('/', (req, res) => {
 //   res.send('<h1>hi</h1>');
 // });
