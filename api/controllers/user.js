@@ -1,3 +1,4 @@
+const { sendError } = require('../utils/helper');
 const User = require('./../model/user');
 
 exports.createUser = async (req, res) => {
@@ -6,9 +7,7 @@ exports.createUser = async (req, res) => {
   console.log('user ', user);
 
   if (user) {
-    return res
-      .status(400)
-      .json({ success: false, error: 'This email already exists!' });
+    return sendError(res, 'This email already exists!');
   }
   const newUser = new User({
     name,
@@ -19,4 +18,16 @@ exports.createUser = async (req, res) => {
   await newUser.save();
   console.log('User saved');
   res.send(newUser);
+};
+
+exports.signin = async (req, res) => {
+  const { email, password } = req.body;
+  if (!email.trim() || !password.trim())
+    return sendError(res, 'Email/Password is missing!');
+
+  const user = await User.findOne({ email });
+  if (!user) return sendError(res, 'User not found!');
+
+  const isMatch = await user.comparePassword(password);
+  if (!isMatch) return sendError(res, 'email/password do not match');
 };

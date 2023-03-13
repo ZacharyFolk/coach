@@ -31,4 +31,11 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+// static method to use with User class (like default save() method for example)
+
+userSchema.methods.comparePassword = async function (password) {
+  const result = await bcrypt.compareSync(password, this.password);
+  return result;
+};
+
 module.exports = mongoose.model('User', userSchema);
