@@ -1,6 +1,14 @@
 const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 8000;
+const User = require('./model/user');
+const mongoose = require('mongoose');
+mongoose
+  .connect('mongodb://192.168.86.26:27017/coach', {
+    useNewUrlParser: true,
+  })
+  .then(() => console.log('db is connected'))
+  .catch((err) => console.log(err));
 
 // for middleware to parse the JSON payload and return req.body to next()
 app.use(express.json());
@@ -18,13 +26,21 @@ app.post(
   '/api/user/create',
 
   (req, res) => {
-    res.send(req.body);
+    const { name, email, password } = req.body;
+
+    const newUser = new User({
+      name,
+      email,
+      password,
+    });
+
+    res.send(newUser);
   }
 );
 
-app.get('/', (req, res) => {
-  res.send('<h1>hi ys</h1>');
-});
+// app.get('/', (req, res) => {
+//   res.send('<h1>hi</h1>');
+// });
 
 app.listen(PORT, () => {
   console.log(`app is running on port ${PORT}`);
