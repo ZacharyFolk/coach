@@ -1,6 +1,8 @@
 const { sendError } = require('../utils/helper');
 const User = require('./../model/user');
 const jwt = require('jsonwebtoken');
+const { generateOTP, mailTransport } = require('../utils/mail');
+const VerificationToken = require('../model/verificationToken');
 
 exports.createUser = async (req, res) => {
   const { name, email, password } = req.body;
@@ -16,8 +18,22 @@ exports.createUser = async (req, res) => {
     password,
   });
 
+  // random number
+  const OTP = generateOTP();
+  const vt = new VerificationToken({
+    owner: newUser._id,
+    token: OTP,
+  });
+  await vt.save();
   await newUser.save();
-  console.log('User saved');
+
+  mailTransport().sendMail({
+    from: 'emailverification@email.com',
+    to: newUser.email,
+    subject: 'Verify your email account',
+    html: `<h1>${OTP}</h1>`,
+  });
+
   res.send(newUser);
 };
 
