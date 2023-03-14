@@ -2,6 +2,8 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 8000;
 const userRouter = require('./routes/user');
+require('dotenv').config();
+
 const mongoose = require('mongoose');
 mongoose
   .connect('mongodb://192.168.86.26:27017/coach', {
