@@ -19,6 +19,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: '',
   },
+  verified: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
 });
 
 // listen for save function and first run this callback function and hash password with bcrypt
