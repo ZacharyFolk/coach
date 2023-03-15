@@ -1,4 +1,4 @@
-const { sendError } = require('../utils/helper');
+const { sendError, createRandomBytes } = require('../utils/helper');
 const User = require('./../model/user');
 const jwt = require('jsonwebtoken');
 const {
@@ -6,10 +6,12 @@ const {
   mailTransport,
   validateEmailTemplate,
   confirmationEmailTemplate,
+  generatePasswordResetTemplate,
 } = require('../utils/mail');
 const VerificationToken = require('../model/verificationToken');
 const { isValidObjectId } = require('mongoose');
-
+const ResetToken = require('../model/resetToken');
+const crypto = require('crypto');
 exports.createUser = async (req, res) => {
   const { name, email, password } = req.body;
   const user = await User.findOne({ email });
@@ -91,7 +93,7 @@ exports.verifyEmail = async (req, res) => {
   await VerificationToken.findByIdAndDelete(token._id);
   await user.save();
 
-  // email validation success email
+  //  validation success - welcome email
   mailTransport().sendMail({
     from: 'emailverification@email.com',
     to: user.email,
@@ -103,5 +105,39 @@ exports.verifyEmail = async (req, res) => {
     success: true,
     message: 'Email verified!',
     user: { name: user.name, email: user.email, id: user.__id },
+  });
+};
+
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  if (!email) return sendError(res, 'Please provide a valid email.');
+
+  const user = await User.findOne({ email });
+  if (!user) return sendError(res, 'User not found, invalid request!');
+
+  const token = await ResetToken.findOne({ owner: user._id });
+  //  see model , token resets in 1 hour - expires: 3600,
+  console.log('Forgot Password : token from ResetToken model', token);
+  if (token) return sendError(res, 'Only one request per hour.');
+
+  // no token, generate a new one
+
+  const randoBytes = await createRandomBytes();
+  const resetToken = new ResetToken({ owner: user._id, token: randoBytes });
+  await resetToken.save();
+
+  // reset password email
+  mailTransport().sendMail({
+    from: 'security@email.com',
+    to: user.email,
+    subject: 'Password Reset',
+    html: generatePasswordResetTemplate(
+      `http://localhost:3000/reset-password?token=${randoBytes}&id=${user._id}`
+    ),
+  });
+
+  res.json({
+    success: true,
+    message: 'Password reset link has been sent to your registered email.',
   });
 };
