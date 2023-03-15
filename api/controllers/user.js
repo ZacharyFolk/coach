@@ -7,6 +7,7 @@ const {
   validateEmailTemplate,
   confirmationEmailTemplate,
   generatePasswordResetTemplate,
+  basicEmailTemplate,
 } = require('../utils/mail');
 const VerificationToken = require('../model/verificationToken');
 const { isValidObjectId } = require('mongoose');
@@ -139,5 +140,49 @@ exports.forgotPassword = async (req, res) => {
   res.json({
     success: true,
     message: 'Password reset link has been sent to your registered email.',
+  });
+};
+
+exports.resetPassword = async (req, res) => {
+  // have user from the middleware isResetTokenValid()
+  const { password } = req.body;
+
+  const user = await User.findById(req.user._id);
+
+  if (!user) return sendError(res, 'User not found!');
+
+  // compare password method from user schema
+
+  const isSamePassword = await user.comparePassword(password);
+  if (isSamePassword)
+    return sendError(
+      res,
+      'New password must be different than your previous one.'
+    );
+
+  if (password.trim().length < 8 || password.trim().length > 20)
+    return sendError(res, 'Password must be between 8 - 20 characters.');
+
+  // save user with new password
+  user.password = password.trim();
+  await user.save();
+
+  // remove reset token
+  await ResetToken.findOneAndDelete({ owner: user._id });
+
+  // new password email
+  mailTransport().sendMail({
+    from: 'security@email.com',
+    to: user.email,
+    subject: 'Password Reset Successfully',
+    html: basicEmailTemplate(
+      'Password reset successful',
+      'Ok you are all set!  Now you can login with your new password.'
+    ),
+  });
+
+  res.json({
+    success: true,
+    message: 'Password reset successful.',
   });
 };

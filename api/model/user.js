@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // listen for save function and first run this callback function and hash password with bcrypt
-// only want to do this one time so use isModified
+// this will run the first time or if the password is ever updated
 userSchema.pre('save', async function (next) {
   if (this.isModified('password')) {
     const hash = await bcrypt.hash(this.password, 8);
