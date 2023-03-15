@@ -1,11 +1,13 @@
-import logo from './logo.svg';
-import './App.css';
-
+import Form from './components/Form';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 function App() {
   return (
-    <div className='App'>
-      <header className='App-header'></header>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path='/' element={<h1>Home Page</h1>} />
+        <Route path='/reset-password' element={<Form />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

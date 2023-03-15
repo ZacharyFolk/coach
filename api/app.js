@@ -3,7 +3,7 @@ const app = express();
 const PORT = process.env.PORT || 8000;
 const userRouter = require('./routes/user');
 require('dotenv').config();
-
+const cors = require('cors');
 const mongoose = require('mongoose');
 mongoose
   .connect('mongodb://192.168.86.26:27017/coach', {
@@ -14,6 +14,8 @@ mongoose
 
 // for middleware to parse the JSON payload and return req.body to next()
 app.use(express.json());
+
+app.use(cors());
 // error handler for the middleware status 400 if syntax error in JSON otherwise 500 with error object
 app.use((err, req, res, next) => {
   console.error(err.stack);
