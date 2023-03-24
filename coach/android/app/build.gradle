@@ -93,9 +93,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.coach"
+    namespace "com.lifecoach"
     defaultConfig {
-        applicationId "com.coach"
+        applicationId "com.lifecoach"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

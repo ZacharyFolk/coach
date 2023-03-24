@@ -1,2 +1,15 @@
 node_modules
 .env
+.bundle
+.vscode
+__tests__
+android
+ios
+.eslintrc.js
+.node-version
+.prettierrc.js
+.ruby-version
+.watchmanconfig
+Gemfile
+metro.config.js
+yarn.lock
