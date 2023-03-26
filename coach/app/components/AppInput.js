@@ -1,5 +1,5 @@
 import React from 'react';
-import {TextInput} from 'react-native';
+import {StyleSheet, TextInput} from 'react-native';
 
 const AppInput = ({value, placeholder, onChange, ...rest}) => {
   return (
@@ -7,9 +7,15 @@ const AppInput = ({value, placeholder, onChange, ...rest}) => {
       value={value}
       placeholder={placeholder}
       onChange={onChange}
+      style={styles.inputs}
       {...rest}
     />
   );
 };
-
+const styles = StyleSheet.create({
+  inputs: {
+    backgroundColor: '#fff',
+    margin: 10,
+  },
+});
 export default AppInput;

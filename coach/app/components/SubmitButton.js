@@ -1,15 +1,27 @@
 import React from 'react';
-import {Dimensions, Pressable, StyleSheet, Text} from 'react-native';
+import {
+  Dimensions,
+  TouchableHighlight,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 const SubmitButton = ({title, onPress}) => {
   return (
-    <Pressable onPress={onPress} style={submitStyle.btnContainer}>
-      <Text style={submitStyle.btnTitle}>{title}</Text>
-    </Pressable>
+    <TouchableHighlight
+      style={[styles.button, {backgroundColor: '#2277ee'}]}
+      activeOpacity={0.7}
+      underlayColor="#30aaff"
+      onPress={onPress}>
+      <View>
+        <Text style={styles.buttonText}>{title}</Text>
+      </View>
+    </TouchableHighlight>
   );
 };
 const {width} = Dimensions.get('window');
-const submitStyle = StyleSheet.create({
+const styles = StyleSheet.create({
   btnContainer: {
     width: width - 40,
     height: 50,
@@ -18,6 +30,7 @@ const submitStyle = StyleSheet.create({
     marginBottom: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1,
   },
   btnTitle: {
     fontSize: 20,
