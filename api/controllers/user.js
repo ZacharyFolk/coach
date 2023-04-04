@@ -43,8 +43,16 @@ exports.createUser = async (req, res) => {
     html: validateEmailTemplate(OTP),
   });
 
-  res.send(newUser);
-};
+  res.json({
+    success: true,
+    user: {
+      name: newUser.name,
+      email: newUser.email,
+      id: newUser._id,
+      verified: newUser.verified
+    }
+  });
+}
 
 exports.signin = async (req, res) => {
   const { email, password } = req.body;
