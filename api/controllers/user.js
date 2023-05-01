@@ -49,37 +49,44 @@ exports.createUser = async (req, res) => {
       name: newUser.name,
       email: newUser.email,
       id: newUser._id,
-      verified: newUser.verified
-    }
+      verified: newUser.verified,
+    },
   });
-}
+};
 
 exports.signin = async (req, res) => {
-  const { email, password } = req.body;
-  if (!email.trim() || !password.trim())
-    return sendError(res, 'Email/Password is missing!');
+  try {
+    const { email, password } = req.body;
+    console.log(req.body);
+    if (!email.trim() || !password.trim())
+      return sendError(res, 'Email/Password is missing!');
 
-  const user = await User.findOne({ email });
-  if (!user) return sendError(res, 'User not found!');
+    const user = await User.findOne({ email });
+    if (!user) return sendError(res, 'User not found!');
 
-  const isMatch = await user.comparePassword(password);
-  if (!isMatch) return sendError(res, 'email/password do not match');
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) return sendError(res, 'Email/Password do not match');
 
-  // passed all checks create a token for user
+    // passed all checks create a token for user
 
-  const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-    expiresIn: '1d',
-  });
+    console.log('looks good, making token');
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: '1d',
+    });
 
-  res.json({
-    success: true,
-    user: { name: user.name, email: user.email, id: user._id, token: token },
-  });
+    res.json({
+      success: true,
+      user: { name: user.name, email: user.email, id: user._id, token: token },
+    });
+  } catch (error) {
+    sendError(res, error.message, 500);
+  }
 };
 
 exports.verifyEmail = async (req, res) => {
   const { userId, otp } = req.body;
-  console.log(userId);
+
+  console.log('From API', userId, otp);
   if (!userId || !otp.trim())
     return sendError(res, 'Invalid request, missing parameters!');
 
@@ -90,7 +97,10 @@ exports.verifyEmail = async (req, res) => {
   if (!user) return sendError(res, 'User not found!');
   if (user.verified) return sendError(res, 'This account is already verified!');
 
+  console.log('user from User model', user);
   const token = await VerificationToken.findOne({ owner: user._id });
+
+  console.log('token from VerificationToken model', token);
   if (!token) return sendError(res, 'Sorry, token not found!');
 
   const isMatched = await token.compareToken(otp);
@@ -193,4 +203,26 @@ exports.resetPassword = async (req, res) => {
     success: true,
     message: 'Password reset successful.',
   });
+};
+
+exports.validateAuthToken = async (req, res) => {
+  try {
+    const token = req.header('Authorization').replace('Bearer ', '');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Decoded token:', decoded);
+    const user = await User.findOne({ _id: decoded.userId });
+    console.log('User data:', user);
+
+    console.log('api token', token);
+    if (!user) {
+      return res.status(401).send({ success: false, error: 'User not found' });
+    }
+
+    res.send({
+      success: true,
+      user: { name: user.name, email: user.email, id: user._id },
+    });
+  } catch (error) {
+    res.status(401).send({ success: false, error: 'Invalid token' });
+  }
 };

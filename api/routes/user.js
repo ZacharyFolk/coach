@@ -8,14 +8,18 @@ const {
   verifyEmail,
   forgotPassword,
   resetPassword,
+  validateAuthToken,
 } = require('./../controllers/user');
 router.post('/create', validateUser, validate, createUser);
 router.post('/signin', signin);
 router.post('/verify-email', verifyEmail);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', isResetTokenValid, resetPassword);
+// for email verification
 router.get('/verify-token', isResetTokenValid, (req, res) => {
   res.json({ success: true });
 });
+// main token auth
+router.get('/validate-auth', validateAuthToken);
 
 module.exports = router;
