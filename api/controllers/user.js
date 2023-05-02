@@ -1,4 +1,9 @@
-const { sendError, createRandomBytes } = require('../utils/helper');
+const {
+  sendError,
+  createRandomBytes,
+  generateAccessToken,
+  generateRefreshToken,
+} = require('../utils/helper');
 const User = require('./../model/user');
 const jwt = require('jsonwebtoken');
 const {
@@ -70,13 +75,17 @@ exports.signin = async (req, res) => {
     // passed all checks create a token for user
 
     console.log('looks good, making token');
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: '1d',
-    });
+    // const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+    //   expiresIn: '1d',
+    // });
+
+    const accessToken = generateAccessToken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
 
     res.json({
       success: true,
-      user: { name: user.name, email: user.email, id: user._id, token: token },
+      user: { name: user.name, email: user.email, id: user._id },
+      tokens: { accessToken, refreshToken },
     });
   } catch (error) {
     sendError(res, error.message, 500);
@@ -224,5 +233,26 @@ exports.validateAuthToken = async (req, res) => {
     });
   } catch (error) {
     res.status(401).send({ success: false, error: 'Invalid token' });
+  }
+};
+
+exports.refreshToken = async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res
+      .status(400)
+      .json({ success: false, error: 'Refresh token is missing' });
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const userId = decoded.userId;
+
+    const newAccessToken = generateAccessToken(userId);
+
+    res.json({ success: true, accessToken: newAccessToken });
+  } catch (error) {
+    res.status(401).json({ success: false, error: 'Invalid refresh token' });
   }
 };

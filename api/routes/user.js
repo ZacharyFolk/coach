@@ -9,6 +9,7 @@ const {
   forgotPassword,
   resetPassword,
   validateAuthToken,
+  refreshToken,
 } = require('./../controllers/user');
 router.post('/create', validateUser, validate, createUser);
 router.post('/signin', signin);
@@ -21,5 +22,6 @@ router.get('/verify-token', isResetTokenValid, (req, res) => {
 });
 // main token auth
 router.get('/validate-auth', validateAuthToken);
+router.post('/refresh-token', refreshToken);
 
 module.exports = router;
